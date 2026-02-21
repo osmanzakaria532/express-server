@@ -213,6 +213,15 @@ app.get('/todos', async (req: Request, res: Response) => {
   }
 });
 
+// Not Found Route
+app.use((req: Request, res: Response) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route Not Found',
+    path: req.path,
+  });
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
