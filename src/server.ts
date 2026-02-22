@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import express, { Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import path from 'path';
 import { Pool } from 'pg';
 
@@ -49,7 +49,13 @@ const intiDB = async () => {
 
 intiDB();
 
-app.get('/', (req: Request, res: Response) => {
+// logger middleware
+const logger = (req: Request, res: Response, next: NextFunction) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}\n`);
+  next();
+};
+
+app.get('/', logger, (req: Request, res: Response) => {
   res.send('Hello Next Level Developer!');
 });
 
