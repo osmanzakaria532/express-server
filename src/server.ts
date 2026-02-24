@@ -1,6 +1,8 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import config from './config';
 import intiDB, { pool } from './config/db';
+import logger from './middleware/logger';
+import { userRouter } from './modules/user/user.routes';
 
 const app = express();
 const port = config.port;
@@ -12,136 +14,15 @@ app.use(express.json());
 intiDB();
 
 // logger middleware
-const logger = (req: Request, res: Response, next: NextFunction) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}\n`);
-  next();
-};
 
 app.get('/', logger, (req: Request, res: Response) => {
   res.send('Hello Next Level Developer!');
 });
 
 // Usres CRUD
-app.post('/users', async (req: Request, res: Response) => {
-  const { name, email } = req.body;
+app.use('/users', userRouter);
 
-  try {
-    const result = await pool.query(`INSERT INTO users(name, email) VALUES($1, $2) RETURNING *`, [
-      name,
-      email,
-    ]);
-
-    // console.log(result.rows[0]);
-    res.status(201).json({
-      success: false,
-      message: 'Data Inserted Successfully',
-      data: result.rows[0],
-    });
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-});
-
-app.get('/users', async (req: Request, res: Response) => {
-  try {
-    const result = await pool.query(`SELECT * FROM users`);
-
-    res.status(200).json({
-      success: true,
-      message: 'Users retrieved Successfully',
-      data: result.rows,
-    });
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-      details: error,
-    });
-  }
-});
-
-app.get('/users/:id', async (req: Request, res: Response) => {
-  try {
-    const result = await pool.query(`SELECT * FROM users WHERE id = $1`, [req.params.id]);
-
-    if (result.rows.length === 0) {
-      res.status(404).json({
-        success: false,
-        message: 'User Not Found',
-      });
-    } else {
-      res.status(200).json({
-        success: true,
-        message: 'User retrieved Successfully',
-        data: result.rows[0],
-      });
-    }
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-});
-
-app.put('/users/:id', async (req: Request, res: Response) => {
-  const { name, email } = req.body;
-  try {
-    const result = await pool.query(
-      `
-      UPDATE users SET name=$1, email=$2 WHERE id=$3  RETURNING *`,
-      [name, email, req.params.id],
-    );
-
-    if (result.rows.length === 0) {
-      res.status(404).json({
-        success: false,
-        message: 'User Not Found',
-      });
-    } else {
-      res.status(200).json({
-        success: true,
-        message: 'User updated Successfully',
-        data: result.rows[0],
-      });
-    }
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-});
-
-app.delete('/users/:id', async (req: Request, res: Response) => {
-  try {
-    const result = await pool.query(`DELETE FROM users WHERE id = $1`, [req.params.id]);
-
-    if (result.rowCount === 0) {
-      res.status(404).json({
-        success: false,
-        message: 'User Not Found',
-      });
-    } else {
-      res.status(200).json({
-        success: true,
-        message: 'User delete Successfully',
-        data: null,
-      });
-    }
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-});
-
-// todos
-
+// Todos CRUD
 app.post('/todos', async (req: Request, res: Response) => {
   const { user_id, title } = req.body;
 
