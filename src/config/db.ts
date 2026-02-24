@@ -6,7 +6,7 @@ export const pool = new Pool({
   connectionString: `${config.connection_str}`,
 });
 
-const intiDB = async () => {
+const initDB = async () => {
   await pool.query(
     `
     CREATE TABLE IF NOT EXISTS users(
@@ -38,4 +38,4 @@ const intiDB = async () => {
   );
 };
 
-export default intiDB;
+export default initDB;
